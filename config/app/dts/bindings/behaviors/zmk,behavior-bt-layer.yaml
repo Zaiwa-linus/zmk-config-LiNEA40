@@ -9,8 +9,10 @@ include: behavior-metadata.yaml
 properties:
   label:
     type: string
-    required: true
+    required: false
   "#binding-cells":
+    type: int
+    required: true
     const: 1
 
 binding-cells:
