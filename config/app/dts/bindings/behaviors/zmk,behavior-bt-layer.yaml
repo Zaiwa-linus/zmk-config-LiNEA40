@@ -1,0 +1,17 @@
+description: Bluetooth Profile Layer Behavior
+
+compatible: "zmk,behavior-bt-layer"
+
+include: one_param.yaml
+
+properties:
+  "#binding-cells":
+    const: 1
+  layer-profile-1:
+    type: int
+    default: 1
+    description: Layer to enable when profile 1 is selected
+  layer-profile-2:
+    type: int
+    default: 2
+    description: Layer to enable when profile 2 is selected
