@@ -38,18 +38,18 @@ static int update_layers_for_profile(const struct device *dev, uint8_t profile) 
 
     switch (profile) {
         case 1:
-            zmk_keymap_layer_activate(layer1, false);
-            zmk_keymap_layer_deactivate(layer2, false);
+            zmk_keymap_layer_activate(layer1);
+            zmk_keymap_layer_deactivate(layer2);
             LOG_INF("bt_layer: Profile 1 - Layer %d ON, Layer %d OFF", layer1, layer2);
             break;
         case 2:
-            zmk_keymap_layer_activate(layer2, false);
-            zmk_keymap_layer_deactivate(layer1, false);
+            zmk_keymap_layer_activate(layer2);
+            zmk_keymap_layer_deactivate(layer1);
             LOG_INF("bt_layer: Profile 2 - Layer %d OFF, Layer %d ON", layer1, layer2);
             break;
         default:
-            zmk_keymap_layer_deactivate(layer1, false);
-            zmk_keymap_layer_deactivate(layer2, false);
+            zmk_keymap_layer_deactivate(layer1);
+            zmk_keymap_layer_deactivate(layer2);
             LOG_INF("bt_layer: Profile %d - Layer %d OFF, Layer %d OFF", profile, layer1, layer2);
             break;
     }
