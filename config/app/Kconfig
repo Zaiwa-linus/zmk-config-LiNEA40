@@ -1,0 +1,10 @@
+menu "Custom Behaviors"
+
+config ZMK_BEHAVIOR_BT_LAYER
+    bool "Bluetooth profile layer behavior"
+    depends on ZMK_BLE
+    help
+      Enable the behavior that switches Bluetooth profiles and updates layers to
+      match the selected profile.
+
+endmenu

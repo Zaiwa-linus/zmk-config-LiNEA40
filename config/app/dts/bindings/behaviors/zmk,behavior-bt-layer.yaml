@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: MIT
+
+description: Bluetooth profile select behavior with layer updates
+
+compatible: "zmk,behavior-bt-layer"
+
+include: behavior-metadata.yaml
+
+properties:
+  label:
+    type: string
+    required: true
+  "#binding-cells":
+    const: 1
+
+binding-cells:
+  - profile
