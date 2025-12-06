@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: MIT
+
+description: >
+  Behavior that selects a Bluetooth profile and toggles keymap layers to match.
+
+compatible: "zmk,behavior-bt-layer"
+
+include:
+  - behavior-one_param.yaml
+
+properties:
+  profile1-layer:
+    type: int
+    default: 1
+    description: Layer index to enable for profile 1 and disable for profile 2.
+
+  profile2-layer:
+    type: int
+    default: 2
+    description: Layer index to enable for profile 2 and disable for profile 1.

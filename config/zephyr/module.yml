@@ -1,0 +1,5 @@
+name: zmk-config
+build:
+  cmake: app/CMakeLists.txt
+  kconfig: app/Kconfig
+  dts_root: app

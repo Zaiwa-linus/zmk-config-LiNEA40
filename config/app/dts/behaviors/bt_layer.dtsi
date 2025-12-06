@@ -1,0 +1,11 @@
+/ {
+    behaviors {
+        bt_layer: bt_layer {
+            compatible = "zmk,behavior-bt-layer";
+            label = "BT_LAYER";
+            #binding-cells = <1>;
+            profile1-layer = <1>;
+            profile2-layer = <2>;
+        };
+    };
+};
