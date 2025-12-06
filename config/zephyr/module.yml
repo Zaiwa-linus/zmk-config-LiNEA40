@@ -1,4 +1,5 @@
 build:
   cmake: app
   kconfig: app/Kconfig
-  dts_root: app
+  settings:
+    dts_root: app
