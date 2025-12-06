@@ -1,0 +1,8 @@
+# Copyright (c) 2024 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: BT Profile Layer Behavior
+
+compatible: "zmk,behavior-bt-layer"
+
+include: one_param.yaml

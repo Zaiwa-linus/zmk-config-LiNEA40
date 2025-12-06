@@ -1,0 +1,11 @@
+# Copyright (c) 2024 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+config ZMK_BEHAVIOR_BT_LAYER
+    bool "BT Profile Layer Behavior"
+    default n
+    depends on ZMK_BLE
+    depends on !ZMK_SPLIT || ZMK_SPLIT_ROLE_CENTRAL
+    help
+      Enable behavior that combines BT profile selection with layer switching.
+      When a BT profile is selected, the corresponding layer is automatically activated.
