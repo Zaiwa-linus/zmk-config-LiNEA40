@@ -2,4 +2,6 @@ name: zmk-config
 build:
   cmake: app/CMakeLists.txt
   kconfig: app/Kconfig
-  dts: app
+dts:
+  root: app
+  bindings: app/dts/bindings
