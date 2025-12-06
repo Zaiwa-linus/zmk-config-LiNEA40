@@ -2,6 +2,7 @@ config ZMK_BEHAVIOR_BT_LAYER
     bool "BT Profile Layer Behavior"
     default y
     depends on ZMK_BLE
+    depends on !ZMK_SPLIT_ROLE_PERIPHERAL
     help
       Enable BT Profile Layer Behavior which combines Bluetooth profile
       selection with automatic layer switching.
