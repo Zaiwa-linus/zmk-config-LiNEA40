@@ -59,7 +59,7 @@
         irq-gpios = <&xiao_d 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>; //MOT-D6
         automouse-layer = <3>;
         snipe-layers = <9>;
-        scroll-layers = <5>;
+        scroll-layers = <8>;
         //scroll-layers = <4 5 6>;
     };
 };
