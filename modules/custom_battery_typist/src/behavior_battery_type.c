@@ -235,8 +235,9 @@ static int get_central_battery(void) {
 
 static int get_peripheral_battery(void) {
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING)
-    int soc = zmk_split_get_peripheral_battery_level(0);
-    return (soc >= 0) ? soc : -1;
+    uint8_t level = 0;
+    int rc = zmk_split_get_peripheral_battery_level(0, &level);
+    return (rc == 0) ? (int)level : -1;
 #else
     return -1;
 #endif
