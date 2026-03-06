@@ -244,7 +244,12 @@ static void bond_count_cb(const struct bt_bond_info *info, void *user_data) {
 
 static bool profile_has_bond(int profile_index) {
     int count = 0;
-    bt_foreach_bond(BT_ID_DEFAULT + profile_index, bond_count_cb, &count);
+    /* Split keyboards: ID 0 = split connection, profiles start at ID 1 */
+    int bt_id = profile_index;
+#if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE)
+    bt_id += 1;
+#endif
+    bt_foreach_bond(bt_id, bond_count_cb, &count);
     return count > 0;
 }
 
