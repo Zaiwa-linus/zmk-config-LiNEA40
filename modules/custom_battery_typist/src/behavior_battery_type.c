@@ -15,7 +15,6 @@
 #include <zmk/behavior.h>
 #include <zmk/battery.h>
 #include <zmk/ble.h>
-#include <zephyr/bluetooth/bluetooth.h>
 #include <zmk/endpoints.h>
 #include <zmk/hid.h>
 #include <zmk/keymap.h>
@@ -49,12 +48,6 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define FORMAT_MIDDLE   "% R:"
 #define FORMAT_SUFFIX   "%"
 #define FORMAT_NO_DATA  "--"
-
-/* BT profile count (ZMK default: 5) */
-#if !defined(CONFIG_ZMK_BLE_PROFILE_COUNT)
-#define CONFIG_ZMK_BLE_PROFILE_COUNT 5
-#endif
-#define BT_PROFILE_COUNT CONFIG_ZMK_BLE_PROFILE_COUNT
 
 /* ----------------------------------------------------------------
  * US layout keycode mapping
@@ -232,28 +225,6 @@ static int send_number(int value) {
 }
 
 /* ----------------------------------------------------------------
- * BT profile bond check
- *
- * bt_foreach_bond() callback increments a counter.
- * If count > 0, the profile has a bonded (paired) device.
- * ---------------------------------------------------------------- */
-static void bond_count_cb(const struct bt_bond_info *info, void *user_data) {
-    int *count = user_data;
-    (*count)++;
-}
-
-static bool profile_has_bond(int profile_index) {
-    int count = 0;
-    /* Split keyboards: ID 0 = split connection, profiles start at ID 1 */
-    int bt_id = profile_index;
-#if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE)
-    bt_id += 1;
-#endif
-    bt_foreach_bond(bt_id, bond_count_cb, &count);
-    return count > 0;
-}
-
-/* ----------------------------------------------------------------
  * Battery level retrieval
  * ---------------------------------------------------------------- */
 
@@ -301,24 +272,10 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
 
     send_string(FORMAT_SUFFIX);
 
-    /* BT profile status: " BT0:O BT1:D BT2:C" */
+    /* Show active BT profile number */
     int active = zmk_ble_active_profile_index();
-    for (int i = 0; i < BT_PROFILE_COUNT; i++) {
-        char status;
-        if (i == active) {
-            if (zmk_ble_active_profile_is_open()) {
-                status = 'O';
-            } else if (zmk_ble_active_profile_is_connected()) {
-                status = 'C';
-            } else {
-                status = 'D';
-            }
-        } else {
-            status = profile_has_bond(i) ? 'D' : 'O';
-        }
-        char bt_str[] = { ' ', 'B', 'T', '0' + i, ':', status, '\0' };
-        send_string(bt_str);
-    }
+    char bt_str[] = { ' ', 'B', 'T', '0' + active, '\0' };
+    send_string(bt_str);
 
     return ZMK_BEHAVIOR_OPAQUE;
 }
