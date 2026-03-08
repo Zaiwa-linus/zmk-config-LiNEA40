@@ -20,7 +20,7 @@
 #include <zmk/keymap.h>
 
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING)
-#include <zmk/split/bluetooth/central.h>
+#include <zmk/split/central.h>
 #endif
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
@@ -190,19 +190,19 @@ static int send_char(char c) {
 
     if (mapping->shift) {
         zmk_hid_keyboard_press(HID_LSHIFT);
-        zmk_endpoints_send_report(HID_USAGE_KEY);
+        zmk_endpoint_send_report(HID_USAGE_KEY);
         k_msleep(KEYSTROKE_DELAY_MS);
     }
 
     zmk_hid_keyboard_press(mapping->keycode);
-    zmk_endpoints_send_report(HID_USAGE_KEY);
+    zmk_endpoint_send_report(HID_USAGE_KEY);
     k_msleep(KEYSTROKE_DELAY_MS);
 
     zmk_hid_keyboard_release(mapping->keycode);
     if (mapping->shift) {
         zmk_hid_keyboard_release(HID_LSHIFT);
     }
-    zmk_endpoints_send_report(HID_USAGE_KEY);
+    zmk_endpoint_send_report(HID_USAGE_KEY);
     k_msleep(KEYSTROKE_DELAY_MS);
 
     return 0;
@@ -237,7 +237,7 @@ static int get_central_battery(void) {
 static int get_peripheral_battery(void) {
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE_CENTRAL_BATTERY_LEVEL_FETCHING)
     uint8_t level = 0;
-    int rc = zmk_split_get_peripheral_battery_level(0, &level);
+    int rc = zmk_split_central_get_peripheral_battery_level(0, &level);
     return (rc == 0) ? (int)level : -1;
 #else
     return -1;
