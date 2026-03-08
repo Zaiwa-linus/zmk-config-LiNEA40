@@ -190,19 +190,19 @@ static int send_char(char c) {
 
     if (mapping->shift) {
         zmk_hid_keyboard_press(HID_LSHIFT);
-        zmk_endpoint_send_report(HID_USAGE_KEY);
+        zmk_endpoints_send_report(HID_USAGE_KEY);
         k_msleep(KEYSTROKE_DELAY_MS);
     }
 
     zmk_hid_keyboard_press(mapping->keycode);
-    zmk_endpoint_send_report(HID_USAGE_KEY);
+    zmk_endpoints_send_report(HID_USAGE_KEY);
     k_msleep(KEYSTROKE_DELAY_MS);
 
     zmk_hid_keyboard_release(mapping->keycode);
     if (mapping->shift) {
         zmk_hid_keyboard_release(HID_LSHIFT);
     }
-    zmk_endpoint_send_report(HID_USAGE_KEY);
+    zmk_endpoints_send_report(HID_USAGE_KEY);
     k_msleep(KEYSTROKE_DELAY_MS);
 
     return 0;
