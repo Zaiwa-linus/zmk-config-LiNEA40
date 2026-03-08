@@ -1,6 +1,5 @@
+## DYA Studio 導入作業メモ（作業完了）
 
-
-## DYA Studio 導入計画
 
 ### 1. 概要
 
@@ -83,19 +82,31 @@ manifest:
     path: config
 ```
 
-### 4. Kconfig 設定の追加
+### 4. Kconfig 設定の追加（`LiNEA40_right.conf`）
 
-`.conf` ファイルに以下を追加:
+以下を追加済み:
 ```
+# DYA Studio
 CONFIG_ZMK_STUDIO=y
 CONFIG_ZMK_STUDIO_LOCKING=n
+CONFIG_ZMK_STUDIO_TRANSPORT_BLE=y
+CONFIG_ZMK_STUDIO_LOCK_BLE_DIRECT_ADVERTISING_ON_UNLOCK=y
 CONFIG_ZMK_RUNTIME_INPUT_PROCESSOR=y
 CONFIG_ZMK_RUNTIME_INPUT_PROCESSOR_STUDIO_RPC=y
+CONFIG_ZMK_BLE_MANAGEMENT=y
+CONFIG_ZMK_BLE_MANAGEMENT_STUDIO_RPC=y
+CONFIG_ZMK_BATTERY_HISTORY=y
+CONFIG_ZMK_BATTERY_HISTORY_STUDIO_RPC=y
+CONFIG_ZMK_SETTINGS_RPC=y
+CONFIG_ZMK_SETTINGS_RPC_STUDIO=y
 ```
 
-### 5. keymap の変更
+### 5. keymap の変更（`LiNEA40.keymap`）
 
-DYA Studio に接続するために `&studio_unlock` キーをキーマップに追加する必要がある。
+- `&studio_unlock` を WIRELESS レイヤー右手中段右端に配置
+- `#include <input/processors/runtime-input-processor.dtsi>` を追加
+- `&trackball_listener` に `input-processors = <&mouse_runtime_input_processor>;` を追加
+- scroller に `<&scroll_runtime_input_processor>` を追加
 
 ### 6. カスタムモジュールの API 互換性リスク
 
@@ -119,15 +130,26 @@ v0.2.1 → v0.3 で ZMK 内部 API が変更されている可能性がある。
 
 ### 7. 対応手順
 
-1. **新ブランチを切る** — 現状の v0.2.1 動作を壊さないよう新ブランチで作業 // done
-2. **west.yml を変更** — cormoran フォーク + DYA モジュールに切り替え // done
-3. **ビルドして API エラーを確認** — v0.3 での API 変更を洗い出す // done
-4. **カスタムモジュールを修正** — コンパイルエラーに合わせて API 呼び出しを修正 // done（下記参照）
-5. **keymap に `&studio_unlock` を追加** // done（WIRELESS レイヤー右手中段右端に配置）
-6. **Kconfig に Studio 設定を追加** // done（`LiNEA40_right.conf` に追加済み）
-7. **ビルド＆フラッシュして DYA Studio との接続を確認**
+1. **新ブランチを切る** ✅
+2. **west.yml を変更** — cormoran フォーク + DYA モジュール4つに切り替え ✅
+3. **ビルドして API エラーを確認** — v0.3 での API 変更を洗い出し ✅
+4. **カスタムモジュールを修正** — `behavior_battery_type.c` の API 呼び出し2箇所を修正 ✅
+5. **keymap に `&studio_unlock` を追加** — WIRELESS レイヤー右手中段右端に配置 ✅
+6. **Kconfig に Studio 設定を追加** — `LiNEA40_right.conf` に DYA Studio 用設定14行追加 ✅
+7. **keymap に runtime input processor を追加** — トラックボール・スクロールに対応 ✅
+8. **ビルド＆フラッシュして DYA Studio との接続を確認** — 未実施
 
-### 8. 参考リンク
+### 8. 変更ファイル一覧（production との差分）
+
+| ファイル | 変更内容 |
+|---------|---------|
+| `config/west.yml` | ZMK を cormoran フォーク v0.3 に変更、DYA モジュール4つ追加 |
+| `config/boards/shields/LiNEA40/LiNEA40_right.conf` | DYA Studio 用 Kconfig 設定14行追加 |
+| `config/LiNEA40.keymap` | runtime-input-processor 追加、`&studio_unlock` 追加 |
+| `modules/custom_battery_typist/src/behavior_battery_type.c` | v0.3 API 変更に対応（ヘッダパス・関数名） |
+| `.claude/settings.local.json` | Claude Code ローカル設定（開発用） |
+
+### 9. 参考リンク
 
 - [DYA Studio](https://studio.dya.cormoran.works/)
 - [DYA Studioを導入してみるぞ！moNa2編｜おぐ](https://note.com/heace/n/nf06b797ffa79)
