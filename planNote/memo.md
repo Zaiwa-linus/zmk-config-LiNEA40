@@ -111,14 +111,20 @@ v0.2.1 → v0.3 で ZMK 内部 API が変更されている可能性がある。
 
 `behavior_os_layer.c` も同様に影響を受ける可能性あり。
 
+#### 実際に発生した API 変更（v0.3 対応で修正済み）
+
+`behavior_battery_type.c` で以下2点を修正:
+- `#include <zmk/split/bluetooth/central.h>` → `#include <zmk/split/central.h>`
+- `zmk_split_get_peripheral_battery_level()` → `zmk_split_central_get_peripheral_battery_level()`
+
 ### 7. 対応手順
 
-1. **新ブランチを切る** — 現状の v0.2.1 動作を壊さないよう新ブランチで作業// done
-2. **west.yml を変更** — cormoran フォーク + DYA モジュールに切り替え
-3. **ビルドして API エラーを確認** — v0.3 での API 変更を洗い出す
-4. **カスタムモジュールを修正** — コンパイルエラーに合わせて API 呼び出しを修正
-5. **keymap に `&studio_unlock` を追加**
-6. **Kconfig に Studio 設定を追加**
+1. **新ブランチを切る** — 現状の v0.2.1 動作を壊さないよう新ブランチで作業 // done
+2. **west.yml を変更** — cormoran フォーク + DYA モジュールに切り替え // done
+3. **ビルドして API エラーを確認** — v0.3 での API 変更を洗い出す // done
+4. **カスタムモジュールを修正** — コンパイルエラーに合わせて API 呼び出しを修正 // done（下記参照）
+5. **keymap に `&studio_unlock` を追加** // done（WIRELESS レイヤー右手中段右端に配置）
+6. **Kconfig に Studio 設定を追加** // done（`LiNEA40_right.conf` に追加済み）
 7. **ビルド＆フラッシュして DYA Studio との接続を確認**
 
 ### 8. 参考リンク
