@@ -1,77 +1,131 @@
-## ZMK Custom Behavior: バッテリー残量自動タイピング機能 開発プラン（アップデート版）
 
-### 1. 開発の概要
 
-ZMKファームウェアを拡張し、特定のキーを押した際に「左右のバッテリー残量を取得し、キーストロークとしてPCへ送信する」独自のカスタムビヘイビア（Custom Behavior）をC言語で実装します。
+## DYA Studio 導入計画
 
-* **想定動作:** 割り当てたキーを押すと、PCのカーソル位置に `L:50% R:80%` といった文字列が自動入力される。
-* **実装方針:** ZMK本体のソースはいじらず、独立した「ZMKモジュール」として実装し、`west.yml` 経由で読み込む（メンテナンス性確保のため）。
+### 1. 概要
 
-### 2. ディレクトリ構成（ZMK Module形式）
+[DYA Studio](https://studio.dya.cormoran.works/) は cormoran 氏が開発した ZMK Studio ベースのWebキーマップ編集ツール。
+ブラウザから USB / Bluetooth 経由でリアルタイムにキーマップ変更が可能。
+トラックボールスクロール設定、オートマウス設定、バッテリー履歴表示などに対応。
 
-開発者には、以下の構成でモジュールを作成してもらいます（`Kconfig` を追加しています）。
+### 2. 現状の問題
 
-```text
-zmk-config/
-├── config/
-│   ├── west.yml                   <- [重要] ここで作成したモジュールを宣言する
-│   └── (あなたのキーボード).keymap
-├── modules/
-│   └── custom_battery_typist/
-│       ├── zephyr/
-│       │   └── module.yml         <- Zephyrモジュール定義
-│       ├── dts/
-│       │   └── bindings/
-│       │       └── zmk,behavior-battery-type.yaml
-│       ├── src/
-│       │   └── behavior_battery_type.c  <- メインの実装
-│       ├── Kconfig                <- [重要] モジュールの有効化オプションを定義
-│       └── CMakeLists.txt
-└── build.yaml                     <- [重要] cmake-argsなどでモジュールパスを通す
+| 項目 | 現状 | DYA Studio 要件 |
+|------|------|-----------------|
+| ZMK バージョン | `v0.2.1`（zmkfirmware/zmk） | cormoran/zmk `v0.3-branch+dya` |
+| DYA 用モジュール | なし | 4つのモジュールが必要 |
+| Studio 設定 | ZMK Studio有効だが公式版 | DYA Studio 用設定に変更が必要 |
+| keymap | `&studio_unlock` なし | `&studio_unlock` キーが必要 |
 
+**ZMK v0.2.1 → v0.3 への移行が必須。** cormoran 氏の ZMK フォーク（v0.3ベース）を使用する必要がある。
+
+### 3. west.yml の変更内容
+
+現在の `config/west.yml`:
+```yaml
+manifest:
+  remotes:
+    - name: zmkfirmware
+      url-base: https://github.com/zmkfirmware
+    - name: inorichi
+      url-base: https://github.com/inorichi
+    - name: caksoylar
+      url-base: https://github.com/caksoylar
+  projects:
+    - name: zmk
+      remote: zmkfirmware
+      revision: v0.2.1
+      import: app/west.yml
+    - name: zmk-pmw3610-driver
+      remote: inorichi
+      revision: main
+    - name: zmk-rgbled-widget
+      remote: caksoylar
+      revision: e9472d6
+  self:
+    path: config
 ```
 
-### 3. 実装のステップと具体的なAPI
+変更後:
+```yaml
+manifest:
+  remotes:
+    - name: cormoran
+      url-base: https://github.com/cormoran
+    - name: inorichi
+      url-base: https://github.com/inorichi
+    - name: caksoylar
+      url-base: https://github.com/caksoylar
+  projects:
+    - name: zmk
+      remote: cormoran
+      revision: v0.3-branch+dya
+      import: app/west.yml
+    - name: zmk-module-ble-management
+      remote: cormoran
+      revision: main
+    - name: zmk-module-battery-history
+      remote: cormoran
+      revision: main
+    - name: zmk-module-settings-rpc
+      remote: cormoran
+      revision: main
+    - name: zmk-module-runtime-input-processor
+      remote: cormoran
+      revision: main
+    - name: zmk-pmw3610-driver
+      remote: inorichi
+      revision: main
+    - name: zmk-rgbled-widget
+      remote: caksoylar
+      revision: e9472d6
+  self:
+    path: config
+```
 
-#### ステップ 3-1: ビルド構成のセットアップ
+### 4. Kconfig 設定の追加
 
-1. `Kconfig` に `config CUSTOM_BATTERY_TYPIST` のようなフラグを定義します。
-2. `config/west.yml` の `manifest.projects` にローカルモジュールとしてパスを追加し、ZMKのビルドシステムがこのディレクトリを認識できるようにします。
+`.conf` ファイルに以下を追加:
+```
+CONFIG_ZMK_STUDIO=y
+CONFIG_ZMK_STUDIO_LOCKING=n
+CONFIG_ZMK_RUNTIME_INPUT_PROCESSOR=y
+CONFIG_ZMK_RUNTIME_INPUT_PROCESSOR_STUDIO_RPC=y
+```
 
-#### ステップ 3-2: バッテリー情報の取得（ZMK State API）
+### 5. keymap の変更
 
-ペリフェラル（左側）のバッテリー状態は、単純なSensor APIではなく、ZMKのステート管理システムから取得する必要があります。
+DYA Studio に接続するために `&studio_unlock` キーをキーマップに追加する必要がある。
 
-* **参照元:** `app/src/battery.c` や `app/src/split/bluetooth/central.c` を参考にします。
-* **イベントリスナー:** `zmk_battery_state_changed` イベントをリッスンし、`struct zmk_battery_state` からセントラルとペリフェラル両方の最新の SoC (State of Charge: ％) をキャッシュしておく設計が確実です。
-* **フォールバック処理:** ペリフェラルが未接続、あるいはスリープ中でデータが取れない場合は `L:--% R:80%` のようにフォールバックするエラーハンドリングを実装します。
+### 6. カスタムモジュールの API 互換性リスク
 
-#### ステップ 3-3: 数値からキーコードへの変換（パーサー）
+v0.2.1 → v0.3 で ZMK 内部 API が変更されている可能性がある。以下のAPIに注意:
 
-取得した整数値と文字列を、OSのキー配列設定に合わせた USB HID Keycode にマッピングします。
+| API | 用途 | リスク |
+|-----|------|--------|
+| `zmk_hid_keyboard_press/release` | キー入力送信 | シグネチャ変更の可能性 |
+| `zmk_endpoints_send_report(HID_USAGE_KEY)` | HIDレポート送信 | 引数やAPI名変更の可能性 |
+| `zmk_split_get_peripheral_battery_level` | ペリフェラルバッテリー取得 | ヘッダパスやAPI変更の可能性 |
+| `BEHAVIOR_DT_INST_DEFINE` | ビヘイビア登録マクロ | 引数変更の可能性 |
+| `#include <zmk/split/bluetooth/central.h>` | ヘッダパス | パス変更の可能性 |
 
-* ここでの変換ロジックは、C言語内の配列や `switch` 文でハードコードするか、将来的な拡張性を考慮してマクロ定義にしておきます。
+`behavior_os_layer.c` も同様に影響を受ける可能性あり。
 
-#### ステップ 3-4: キーストロークのキューイングと送信（ZMK HID API）
+### 7. 対応手順
 
-文字列を1文字ずつキーストロークとしてOSに送信します。
+1. **新ブランチを切る** — 現状の v0.2.1 動作を壊さないよう新ブランチで作業// done
+2. **west.yml を変更** — cormoran フォーク + DYA モジュールに切り替え
+3. **ビルドして API エラーを確認** — v0.3 での API 変更を洗い出す
+4. **カスタムモジュールを修正** — コンパイルエラーに合わせて API 呼び出しを修正
+5. **keymap に `&studio_unlock` を追加**
+6. **Kconfig に Studio 設定を追加**
+7. **ビルド＆フラッシュして DYA Studio との接続を確認**
 
-* **推奨API:** 単純に `zmk_endpoints_send_report()` を叩くのではなく、`zmk_hid_keyboard_press(キーコード)` と `zmk_hid_keyboard_release(キーコード)` をセットで呼び出し、その都度 `zmk_endpoints_send_report(HID_EP_REPORT_KEYBOARD)` を実行して状態を確定させます。
-* **参考コード:** ZMK標準の `behavior_macro.c` のキュー処理・送信処理の実装が最も参考になります。
+### 8. 参考リンク
 
-### 4. 開発者への重要申し送り事項（罠になりやすいポイント）
-
-1. **OSのキーボード配列（JIS/US）のハードコード:**
-* キーボードが送信するのは文字ではなく「物理キーの位置」です。例えば `:`（コロン）を出力したい場合、US配列環境なら `Shift + ;` のキーコードセットを送る必要がありますが、JIS配列環境では `Shift` を押さずに特定のキー（US物理配列でいう `'` の位置など）を送る必要があります。
-* **対策:** 今回使用するPC側のOSの配列設定（JISかUSか）を開発者に伝え、それに合わせてキーコードのマッピングを固定してもらってください。
-
-
-2. **キー送信のディレイとBLEのレイテンシ:**
-* 文字を取りこぼさずに入力させるためには、1ストロークごとに `k_msleep()` などで意図的なウェイト（遅延）を挟む必要があります。
-* 特に **Bluetooth (BLE) 接続時はUSB接続時よりもレイテンシ（通信間隔）が大きくなる** ため、OSが処理を取りこぼしやすいです。ウェイトは少し長め（例: 20〜30ms以上）に設定するか、調整可能な定数にしておくことを推奨します。
-
-
-3. **出力フォーマットの変更:**
-* 実装後、「`L:50% R:80%`」という形式を「`Batt -> L50 R80`」などに変えたくなる可能性があります。表示フォーマットの定義部分は、後からあなたがソースコードを見て簡単に書き換えられるよう、変数や配列として分かりやすく分離して記述するよう依頼してください。
+- [DYA Studio](https://studio.dya.cormoran.works/)
+- [DYA Studioを導入してみるぞ！moNa2編｜おぐ](https://note.com/heace/n/nf06b797ffa79)
+- [Compatible DYAStudio｜RaZiLy](https://note.com/razily/n/n7a23e5a7512c)
+- [ZMK Config を変更する | DYA Dash](https://cormoran.github.io/dya-dash-keyboard/feature-guide/zmk_config/)
 
 
