@@ -1,0 +1,54 @@
+# Regenerates document/img/LiNEA40-keymap.svg whenever the keymap changes.
+#
+# This deliberately does NOT use caksoylar/keymap-drawer's reusable workflow,
+# so that CI runs exactly the same `make keymap-svg` as a local machine does
+# and cannot drift from it. See document/keymap.md.
+
+name: Draw keymap
+
+on:
+  push:
+    paths:
+      - "config/LiNEA40.keymap"
+      - "config/boards/shields/LiNEA40/LiNEA40.dtsi"
+      - "keymap_drawer.config.yaml"
+      - ".github/workflows/draw-keymap.yml"
+  workflow_dispatch:
+
+jobs:
+  draw:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Draw keymap
+        run: make keymap-svg
+
+      - name: Upload SVG as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: keymap-svg
+          path: document/img/LiNEA40-keymap.svg
+
+      # The commit below only touches the SVG, which is not in this workflow's
+      # path filter, so it cannot trigger another run.
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- document/img/LiNEA40-keymap.svg; then
+            echo "No change to the keymap diagram."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add document/img/LiNEA40-keymap.svg
+          git commit -m "docs: キーマップ図を再生成"
+          git push origin HEAD:"${GITHUB_REF_NAME}"

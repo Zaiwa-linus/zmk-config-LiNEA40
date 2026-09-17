@@ -25,7 +25,9 @@ clean:
 
 # ---- キーマップ画像の生成 -------------------------------------------------
 # keymap-drawer で config/LiNEA40.keymap を SVG 化する。
-# tree-sitter は 0.24.0 に固定する必要がある（README 参照）。
+# keymap-drawer 0.23 以降は Python 3.11 以上を要求する。3.10 以下では 0.21 が
+# 入ってしまい、現在の tree-sitter では動かない（document/keymap.md 参照）。
+KEYMAP_PYTHON ?= python3
 KEYMAP_VENV = .venv-keymap
 KEYMAP_SVG  = document/img/LiNEA40-keymap.svg
 KEYMAP_LAYERS = default mac ios MOUSE MARK CURSOR_win CURSOR_mac CURSOR_ios FUNCTION
@@ -33,10 +35,12 @@ KEYMAP_LAYERS = default mac ios MOUSE MARK CURSOR_win CURSOR_mac CURSOR_ios FUNC
 .PHONY: keymap-svg
 
 $(KEYMAP_VENV)/bin/keymap:
-	python3 -m venv $(KEYMAP_VENV)
+	@$(KEYMAP_PYTHON) -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)' || \
+	  { echo "ERROR: keymap-drawer needs Python 3.11+. Got: $$($(KEYMAP_PYTHON) --version)"; \
+	    echo "       Re-run with e.g. make keymap-svg KEYMAP_PYTHON=python3.12"; exit 1; }
+	$(KEYMAP_PYTHON) -m venv $(KEYMAP_VENV)
 	$(KEYMAP_VENV)/bin/pip install --quiet --upgrade pip
-	$(KEYMAP_VENV)/bin/pip install --quiet keymap-drawer
-	$(KEYMAP_VENV)/bin/pip install --quiet "tree-sitter==0.24.0" "tree-sitter-devicetree==0.14.1"
+	$(KEYMAP_VENV)/bin/pip install --quiet "keymap-drawer>=0.23"
 
 keymap-svg: $(KEYMAP_VENV)/bin/keymap
 	@mkdir -p $(dir $(KEYMAP_SVG))

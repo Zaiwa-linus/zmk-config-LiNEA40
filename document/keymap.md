@@ -43,20 +43,27 @@ make keymap-svg
 keymap-drawer はそれらの意味を知らないため、`raw_binding_map` で表示名を与えています。
 ビヘイビアを追加したら、ここにも1行足してください。
 
-## 依存バージョンの固定について
+## Python のバージョン要件
 
-`Makefile` は `tree-sitter` を **0.24.0**、`tree-sitter-devicetree` を **0.14.1** に固定しています。
-keymap-drawer 0.21.0 は `tree-sitter>=0.24,<1.0` を許容していますが、実際には次の理由で
-この組み合わせ以外は動きません。
+keymap-drawer 0.23 以降は **Python 3.11 以上**を要求します。
+3.10 以下で `pip install keymap-drawer` すると古い 0.21.0 が入り、
+現在の tree-sitter（0.25 以降）で削除された API を呼ぶため次のように失敗します。
 
-| tree-sitter | 症状 |
-|---|---|
-| 0.26.x | `Language.query` が削除済み → `AttributeError` |
-| 0.25.x | `Query.captures` が削除済み → `AttributeError` |
-| 0.24.0 + devicetree 0.15.0 | 文法の ABI が 15 で新しすぎる → `Incompatible Language version 15` |
-| **0.24.0 + devicetree 0.14.1** | **動作する** |
+```
+AttributeError: 'tree_sitter.Language' object has no attribute 'query'
+AttributeError: 'tree_sitter.Query' object has no attribute 'captures'
+```
 
-keymap-drawer が新しい tree-sitter に追従したら、この固定は外せます。
+`make keymap-svg` は実行前に Python のバージョンを確認し、3.11 未満なら
+分かりやすいエラーで止まります。システムの `python3` が古い場合は、
+使うインタプリタを指定してください。
+
+```sh
+make keymap-svg KEYMAP_PYTHON=python3.12
+```
+
+3.11 以上であればバージョン固定は不要で、最新の keymap-drawer と
+tree-sitter の組み合わせで動きます。
 
 ## ブラウザで試す
 
