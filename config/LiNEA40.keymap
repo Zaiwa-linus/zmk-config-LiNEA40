@@ -234,9 +234,9 @@
         // 9
         GAME {
             bindings = <
-&trans  &trans  &trans  &trans  &trans                                 &kp LEFT_ARROW   &trans        &trans  &mkp MB1  &mkp MB2
-&trans  &trans  &trans  &trans  &trans                                 &kp DOWN_ARROW   &kp UP_ARROW  &trans  &trans    &trans
-&trans  &trans  &trans  &trans  &trans                                 &kp RIGHT_ARROW  &trans        &trans  &trans    &trans
+&trans  &trans  &trans  &trans  &trans                                 &kp LEFT_ARROW   &kp Q         &trans  &trans  &mkp MB1
+&trans  &trans  &trans  &trans  &trans                                 &kp DOWN_ARROW   &kp UP_ARROW  &trans  &trans  &mkp MB2
+&trans  &trans  &trans  &trans  &trans                                 &kp RIGHT_ARROW  &kp W         &trans  &trans  &trans
 &trans  &trans  &trans  &trans  &trans  &trans    &kp X  &kp Z                          &kp RSHIFT    &trans  &trans
             >;
             sensor-bindings = <&mouse_scrl SCRL_DOWN SCRL_UP>;
