@@ -15,6 +15,7 @@
 | エンコーダ | EC11（左手側） |
 | インジケータ | RGB LED ウィジェット（rgbled_adapter） |
 | ZMK Studio | 右手側で有効（`CONFIG_ZMK_STUDIO=y`） |
+| カスタムビヘイビア | `batt_disp` / `bt_layer` / `bt_base`（C 実装、`config/` を Zephyr モジュール化して同梱） |
 
 ## ディレクトリ構成
 
@@ -37,15 +38,63 @@ Makefile                       Docker コンテナ経由のローカルビルド
 document/                      ドキュメント
 ```
 
+### キーマップの図
+
+レイヤーとコンボの割り当ては [document/keymap.md](document/keymap.md) に図があります。
+キーマップを変更したら `make keymap-svg` で再生成してください。
+
 ### キーマップの編集場所
 
 編集するのは **[config/LiNEA40.keymap](config/LiNEA40.keymap)** です。
 `config/boards/shields/LiNEA40/LiNEA40.keymap` はシールド定義に同梱されたデフォルトで、
 ビルド時は `ZMK_CONFIG` で指定される `config/` 側が優先されます。
 
-レイヤー構成: `default_layer` / `MOUSE` / `MARK` / `CURSOR` / `FUNCTION` / `SCROLL` / `WIRELESS`
+レイヤー構成（番号は `#define` と実際のノード順が一致している必要があります）:
+
+| # | 名前 | 用途 |
+|---|---|---|
+| 0 | `default_layer` | ベース |
+| 1 / 2 | `mac` / `ios` | ホスト OS 別の修飾キー差し替え。`bt_layer` が BT プロファイルと連動して有効化 |
+| 3 | `MOUSE` | トラックボール操作時に自動で有効（automouse） |
+| 4 | `MARK` | 記号 |
+| 5 / 6 / 7 | `CURSOR_win` / `CURSOR_mac` / `CURSOR_ios` | 数字・カーソル。OS 別 |
+| 8 | `FUNCTION` | ファンクション、**トラックボールがスクロールになる層**、BT 管理、`batt_disp`、`bootloader`、`studio_unlock` |
+| 9–11 | `extra_0`–`extra_2` | `status = "disabled"`。ZMK Studio が実行時にレイヤーを追加するための空きスロット |
+
+スクロールは専用レイヤーを持たず FUNCTION に同居しています。`LiNEA40_right.overlay` の
+`scroll-layers` と、キーマップ内 `&trackball_listener` の `scroller { layers = ... }` の
+両方が FUNCTION（8）を指しています。
+
+レイヤー番号のマクロには `LYR_` を付けています（`LYR_SCROLL` など）。
+接頭辞なしの `SCROLL` のような名前にすると、プリプロセッサが**レイヤーのノード名まで数値に置換**してしまい、
+ZMK Studio でレイヤー名が `9` のように表示されてしまうためです。
 
 コンボ、センサー回転ビヘイビア、入力プロセッサ（カーソル加速・スクロール変換）も同ファイル内で定義しています。
+
+### カスタムビヘイビア
+
+C 実装が `config/boards/shields/LiNEA40/src/` にあります。
+
+| ビヘイビア | 機能 |
+|---|---|
+| `batt_disp` | 左右のバッテリー残量を `L:XX% R:XX%` という文字列として HID 入力する |
+| `bt_layer <n>` | BT プロファイル `n` を選択し、対応するホストレイヤーを有効化する。FUNCTION レイヤーのプロファイル 0–2 に割り当て済み |
+| `bt_base <n>` | BT プロファイル `n` を選択し、ホストレイヤーを解除してベースへ戻す。FUNCTION レイヤーのプロファイル 3–4 に割り当て済み |
+
+`bt_layer` はレイヤー 1–4 をホスト別レイヤーとみなしますが、実際にホスト別なのは
+`mac`(1) と `ios`(2) だけで、3 と 4 は `MOUSE` / `MARK` です。
+そのためキーマップでは `bt_layer` をプロファイル 0–2 にのみ割り当て、
+OS 別レイヤーを持たないプロファイル 3–4 には `bt_base` を使っています。
+
+**Zephyr はシールドディレクトリの `CMakeLists.txt` を処理しません。** そのため
+`config/zephyr/module.yml` で `config/` 自体を Zephyr モジュールとして宣言し、
+`config/CMakeLists.txt` から `target_sources()` でソースを追加しています。
+GitHub Actions では `config/` が west のマニフェストリポジトリなので自動的にモジュールとして検出されますが、
+ローカルビルドでは `ZMK_EXTRA_MODULES` に `config/` のパスを含める必要があります（`Makefile` は対応済み）。
+
+いずれも `#if IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)` と
+`#if DT_HAS_COMPAT_STATUS_OKAY(...)` で自己ガードしているため、
+左手側や `settings_reset` のビルドでも安全にコンパイルされます。
 
 ### トラックボールの調整場所
 
@@ -70,9 +119,10 @@ Docker（Docker Desktop / OrbStack）でワークスペースを組み立てる�
 
 ## 注意点
 
-- **`Makefile` と `build.yaml` の引数が一致していません。** `Makefile` の左手側ターゲットは
-  `rgbled_adapter` シールドと `ZMK_EXTRA_MODULES` を渡しておらず、CI と異なる成果物になります。
-  ローカルで CI と同じものを作る場合は両方を明示的に指定してください。
+- **レイヤー番号は 2 箇所で二重管理されています。** `config/LiNEA40.keymap` の `#define` と、
+  `LiNEA40_right.overlay` のトラックボール設定（`automouse-layer` / `snipe-layers` / `scroll-layers`）です。
+  後者は数値リテラルなので、レイヤーを追加・削除したら必ず両方を更新してください。
+  現在は automouse=MOUSE(3) / scroll=FUNCTION(8) です。snipe は使わないので `snipe-layers` は指定していません。
 - `.conf` や overlay を変更したときは `west build -p` で pristine ビルドしてください。
   差分ビルドでは Kconfig / devicetree が再生成されません。
 - 依存モジュールのリビジョンは `config/west.yml` が正です。ローカルの clone を更新するときは

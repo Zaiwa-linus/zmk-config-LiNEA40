@@ -1,0 +1,5 @@
+description: Select Bluetooth profile and activate the matching layer
+
+compatible: "zmk,behavior-bt-layer"
+
+include: one_param.yaml

@@ -1,0 +1,8 @@
+# Makes this zmk-config directory a Zephyr module so the custom behavior
+# sources under boards/shields/LiNEA40/src are compiled into the firmware.
+#
+# Zephyr never processes a shield directory's CMakeLists.txt, so a module is
+# the only way to add C sources from a zmk-config.
+name: linea40
+build:
+  cmake: .
