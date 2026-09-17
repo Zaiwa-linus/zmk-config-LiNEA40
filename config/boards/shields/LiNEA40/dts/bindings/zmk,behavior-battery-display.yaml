@@ -1,0 +1,8 @@
+description: |
+  Type battery percentage as HID keystrokes.
+  Outputs "L:XX% R:XX%" where L=left(peripheral) and R=right(central).
+  Each keystroke has a 30ms inter-key delay for BLE reliability.
+
+compatible: "zmk,behavior-battery-display"
+
+include: zero_param.yaml

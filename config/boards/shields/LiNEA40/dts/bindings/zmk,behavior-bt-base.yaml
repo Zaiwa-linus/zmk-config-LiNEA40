@@ -1,0 +1,5 @@
+description: Select Bluetooth profile and return to the base layer
+
+compatible: "zmk,behavior-bt-base"
+
+include: one_param.yaml

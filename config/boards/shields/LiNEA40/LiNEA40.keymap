@@ -102,6 +102,18 @@
     };
 
     behaviors {
+        bt_layer: bt_layer {
+            compatible = "zmk,behavior-bt-layer";
+            #binding-cells = <1>;
+            display-name = "Wireless Layer";
+        };
+
+        bt_base: bt_base {
+            compatible = "zmk,behavior-bt-base";
+            #binding-cells = <1>;
+            display-name = "Wireless Base";
+        };
+
         re_kp: sensor_rotate_kp {
             compatible = "zmk,behavior-sensor-rotate-var";
             #sensor-binding-cells = <2>;

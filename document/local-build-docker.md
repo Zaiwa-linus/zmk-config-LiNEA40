@@ -91,7 +91,7 @@ docker exec -w /workspaces/zmk/app zmk-build \
   west build -p -d build/left -b seeeduino_xiao_ble -- \
     -DSHIELD="LiNEA40_left rgbled_adapter" \
     -DZMK_CONFIG="/workspaces/zmk-config/config" \
-    -DZMK_EXTRA_MODULES="/workspaces/zmk-modules/zmk-pmw3610-driver;/workspaces/zmk-modules/zmk-rgbled-widget"
+    -DZMK_EXTRA_MODULES="/workspaces/zmk-modules/zmk-pmw3610-driver;/workspaces/zmk-modules/zmk-rgbled-widget;/workspaces/zmk-config/config"
 ```
 
 右手側（セントラル / ZMK Studio 有効）:
@@ -101,9 +101,14 @@ docker exec -w /workspaces/zmk/app zmk-build \
   west build -p -d build/right -b seeeduino_xiao_ble -S studio-rpc-usb-uart -- \
     -DSHIELD="LiNEA40_right rgbled_adapter" \
     -DZMK_CONFIG="/workspaces/zmk-config/config" \
-    -DZMK_EXTRA_MODULES="/workspaces/zmk-modules/zmk-pmw3610-driver;/workspaces/zmk-modules/zmk-rgbled-widget" \
+    -DZMK_EXTRA_MODULES="/workspaces/zmk-modules/zmk-pmw3610-driver;/workspaces/zmk-modules/zmk-rgbled-widget;/workspaces/zmk-config/config" \
     -DCONFIG_ZMK_STUDIO=y -DCONFIG_ZMK_STUDIO_LOCKING=n
 ```
+
+`ZMK_EXTRA_MODULES` の最後に `zmk-config/config` 自身が入っている点に注意してください。
+このリポジトリはカスタムビヘイビアの C ソースを持ち、それを Zephyr モジュールとして
+読み込ませるために必要です。これを外すとビヘイビアがコンパイルされず、リンクに失敗します。
+GitHub Actions では `config/` が west のマニフェストリポジトリなので自動検出され、この指定は不要です。
 
 `-p` は pristine（クリア）ビルドです。keymap だけの変更なら省略して差分ビルドできます。
 
@@ -121,7 +126,7 @@ $WS/zmk/app/build/right/zephyr/zmk.uf2     → 右手側
 | | FLASH | RAM |
 |---|---|---|
 | 左 | 約 174KB / 788KB (22%) | 約 36KB / 256KB (14%) |
-| 右 | 約 255KB / 788KB (32%) | 約 73KB / 256KB (29%) |
+| 右 | 約 261KB / 788KB (33%) | 約 78KB / 256KB (31%) |
 
 ## 7. 書き込み
 
@@ -149,6 +154,9 @@ cd "$WS/zmk-config-LiNEA40" && make container_name=zmk-build
 
 **設定変更が反映されない**
 `.conf` や overlay を変更した場合は Kconfig / devicetree の再生成が必要です。`-p` を付けた pristine ビルドにしてください。
+
+**カスタムビヘイビアで `undefined reference` が出る**
+`ZMK_EXTRA_MODULES` に `zmk-config/config` を含め忘れています。上記「west を直接叩く場合」を参照してください。
 
 **`west update` が途中で失敗する**
 ネットワーク起因が大半です。同じコマンドを再実行すれば続きから再開されます。
