@@ -54,9 +54,12 @@ document/                      ドキュメント
 | 4 | `MARK` | 記号 |
 | 5 / 6 / 7 | `CURSOR_win` / `CURSOR_mac` / `CURSOR_ios` | 数字・カーソル。OS 別 |
 | 8 | `FUNCTION` | ファンクション、BT プロファイル選択 |
-| 9 | `SCROLL` | スクロール |
-| 10 | `WIRELESS` | BT 管理、`batt_disp`、`bootloader`、`studio_unlock` |
-| 11–13 | `extra_0`–`extra_2` | `status = "disabled"`。ZMK Studio が実行時にレイヤーを追加するための空きスロット |
+| 9 | `SCROLL` | トラックボールがスクロールになる層。BT 管理、`batt_disp`、`bootloader`、`studio_unlock` も同居 |
+| 10–12 | `extra_0`–`extra_2` | `status = "disabled"`。ZMK Studio が実行時にレイヤーを追加するための空きスロット |
+
+レイヤー番号のマクロには `LYR_` を付けています（`LYR_SCROLL` など）。
+接頭辞なしの `SCROLL` のような名前にすると、プリプロセッサが**レイヤーのノード名まで数値に置換**してしまい、
+ZMK Studio でレイヤー名が `9` のように表示されてしまうためです。
 
 コンボ、センサー回転ビヘイビア、入力プロセッサ（カーソル加速・スクロール変換）も同ファイル内で定義しています。
 
@@ -68,7 +71,7 @@ C 実装が `config/boards/shields/LiNEA40/src/` にあります。
 |---|---|
 | `batt_disp` | 左右のバッテリー残量を `L:XX% R:XX%` という文字列として HID 入力する |
 | `bt_layer <n>` | BT プロファイル `n` を選択し、対応するホストレイヤー（1–4）を有効化する |
-| `bt_base <n>` | BT プロファイル `n` を選択し、ホストレイヤーを解除してベースへ戻す |
+| `bt_base <n>` | BT プロファイル `n` を選択し、ホストレイヤーを解除してベースへ戻す。現在キーには未割り当てで、ZMK Studio から割り当てる用 |
 
 **Zephyr はシールドディレクトリの `CMakeLists.txt` を処理しません。** そのため
 `config/zephyr/module.yml` で `config/` 自体を Zephyr モジュールとして宣言し、
@@ -106,7 +109,7 @@ Docker（Docker Desktop / OrbStack）でワークスペースを組み立てる�
 - **レイヤー番号は 2 箇所で二重管理されています。** `config/LiNEA40.keymap` の `#define` と、
   `LiNEA40_right.overlay` のトラックボール設定（`automouse-layer` / `snipe-layers` / `scroll-layers`）です。
   後者は数値リテラルなので、レイヤーを追加・削除したら必ず両方を更新してください。
-  現在は MOUSE=3 / MARK=4 / SCROLL=9 に対応しています。
+  現在は MOUSE=3 / SCROLL=9 に対応しています。snipe は使わないので `snipe-layers` は指定していません。
 - `.conf` や overlay を変更したときは `west build -p` で pristine ビルドしてください。
   差分ビルドでは Kconfig / devicetree が再生成されません。
 - 依存モジュールのリビジョンは `config/west.yml` が正です。ローカルの clone を更新するときは
