@@ -30,7 +30,7 @@ clean:
 KEYMAP_PYTHON ?= python3
 KEYMAP_VENV = .venv-keymap
 KEYMAP_SVG  = document/img/LiNEA40-keymap.svg
-KEYMAP_LAYERS = default mac ios MOUSE MARK CURSOR_win CURSOR_mac CURSOR_ios FUNCTION
+KEYMAP_LAYERS = default mac ios MOUSE MARK CURSOR_win CURSOR_mac CURSOR_ios FUNCTION GAME
 
 .PHONY: keymap-svg
 
