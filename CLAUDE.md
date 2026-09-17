@@ -38,6 +38,11 @@ Makefile                       Docker コンテナ経由のローカルビルド
 document/                      ドキュメント
 ```
 
+### キーマップの図
+
+レイヤーとコンボの割り当ては [document/keymap.md](document/keymap.md) に図があります。
+キーマップを変更したら `make keymap-svg` で再生成してください。
+
 ### キーマップの編集場所
 
 編集するのは **[config/LiNEA40.keymap](config/LiNEA40.keymap)** です。

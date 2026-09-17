@@ -22,3 +22,28 @@ $(TARGET_RIGHT): $(SRCS_RIGHT)
 
 clean:
 	docker exec -it $(container_name) rm -rf /workspaces/zmk/app/build
+
+# ---- キーマップ画像の生成 -------------------------------------------------
+# keymap-drawer で config/LiNEA40.keymap を SVG 化する。
+# tree-sitter は 0.24.0 に固定する必要がある（README 参照）。
+KEYMAP_VENV = .venv-keymap
+KEYMAP_SVG  = document/img/LiNEA40-keymap.svg
+KEYMAP_LAYERS = default mac ios MOUSE MARK CURSOR_win CURSOR_mac CURSOR_ios FUNCTION
+
+.PHONY: keymap-svg
+
+$(KEYMAP_VENV)/bin/keymap:
+	python3 -m venv $(KEYMAP_VENV)
+	$(KEYMAP_VENV)/bin/pip install --quiet --upgrade pip
+	$(KEYMAP_VENV)/bin/pip install --quiet keymap-drawer
+	$(KEYMAP_VENV)/bin/pip install --quiet "tree-sitter==0.24.0" "tree-sitter-devicetree==0.14.1"
+
+keymap-svg: $(KEYMAP_VENV)/bin/keymap
+	@mkdir -p $(dir $(KEYMAP_SVG))
+	$(KEYMAP_VENV)/bin/keymap -c keymap_drawer.config.yaml parse -z config/LiNEA40.keymap > $(KEYMAP_VENV)/parsed.yaml
+	$(KEYMAP_VENV)/bin/keymap -c keymap_drawer.config.yaml draw \
+	    -d config/boards/shields/LiNEA40/LiNEA40.dtsi \
+	    -o $(KEYMAP_SVG) \
+	    $(KEYMAP_VENV)/parsed.yaml \
+	    -s $(KEYMAP_LAYERS)
+	@echo "Wrote $(KEYMAP_SVG)"

@@ -1,0 +1,5 @@
+# keymap-drawer 用の仮想環境（make keymap-svg が作成する）
+/.venv-keymap/
+
+# macOS
+.DS_Store

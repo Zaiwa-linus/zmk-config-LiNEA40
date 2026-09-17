@@ -1,0 +1,25 @@
+# keymap-drawer configuration for LiNEA40.
+# Used by: keymap -c keymap_drawer.config.yaml parse -z config/LiNEA40.keymap
+
+parse_config:
+  # This keymap defines its own behaviors in C (see config/boards/shields/LiNEA40/src).
+  # keymap-drawer cannot know what they do, so spell them out here.
+  raw_binding_map:
+    "&bt_layer 0": {t: "BT 0", s: "base"}
+    "&bt_layer 1": {t: "BT 1", s: "mac"}
+    "&bt_layer 2": {t: "BT 2", s: "iOS"}
+    "&bt_base 3": {t: "BT 3", s: "base"}
+    "&bt_base 4": {t: "BT 4", s: "base"}
+    "&batt_disp": {t: "BATT", s: "type %"}
+    "&bootloader": {t: "BOOT"}
+    "&studio_unlock": {t: "STUDIO", s: "unlock"}
+    "&mkp MB1": {t: "LCLK"}
+    "&mkp MB2": {t: "RCLK"}
+
+draw_config:
+  # Layer names as shown above each diagram.
+  # Keys are the node names in config/LiNEA40.keymap.
+  # (keymap-drawer renames default_layer to "default" when parsing.)
+  dark_mode: auto
+  draw_key_sides: true
+  separate_combo_diagrams: false
