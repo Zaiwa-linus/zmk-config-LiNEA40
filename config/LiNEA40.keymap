@@ -15,6 +15,7 @@
 #define LYR_MARK     4
 #define LYR_CURSOR   5
 #define LYR_FUNCTION 8
+#define LYR_GAME     9
 
 //mouse cursor
 &mmv {
@@ -52,6 +53,14 @@
 };
 
 &trackball_listener {
+    // Rotate the trackball 90 degrees on the game layer so that pushing the
+    // ball to the right moves the cursor up.
+    game_rotate {
+        layers = <LYR_GAME>;
+        input-processors =
+            <&zip_xy_transform (INPUT_TRANSFORM_XY_SWAP | INPUT_TRANSFORM_Y_INVERT)>;
+    };
+
     scroller {
         layers = <LYR_FUNCTION>;
         input-processors =
@@ -67,6 +76,12 @@
         tabs {
             bindings = <&kp TAB>;
             key-positions = <0 1>;
+        };
+
+        // T + B toggles the game layer on and off (works from either layer).
+        game_toggle {
+            bindings = <&tog LYR_GAME>;
+            key-positions = <4 24>;
         };
 
         mb1 {
@@ -216,7 +231,18 @@
             sensor-bindings = <&mouse_scrl SCRL_DOWN SCRL_UP>;
         };
 
-        // 9-11: extra slots for ZMK Studio runtime layer additions
+        // 9
+        GAME {
+            bindings = <
+&trans  &trans  &trans  &trans  &trans                                 &kp LEFT_ARROW   &kp Q         &trans  &trans  &mkp MB1
+&trans  &trans  &trans  &trans  &trans                                 &kp DOWN_ARROW   &kp UP_ARROW  &trans  &trans  &mkp MB2
+&trans  &trans  &trans  &trans  &trans                                 &kp RIGHT_ARROW  &kp W         &trans  &trans  &trans
+&trans  &trans  &trans  &trans  &trans  &trans    &kp X  &kp Z                          &kp RSHIFT    &trans  &trans
+            >;
+            sensor-bindings = <&mouse_scrl SCRL_DOWN SCRL_UP>;
+        };
+
+        // 10-12: extra slots for ZMK Studio runtime layer additions
         extra_0 { status = "disabled"; bindings = < &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans >; };
         extra_1 { status = "disabled"; bindings = < &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans >; };
         extra_2 { status = "disabled"; bindings = < &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans &trans >; };
