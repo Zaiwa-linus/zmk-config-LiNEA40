@@ -78,10 +78,10 @@
             key-positions = <0 1>;
         };
 
-        // A + G toggles the game layer on and off (works from either layer).
+        // T + B toggles the game layer on and off (works from either layer).
         game_toggle {
             bindings = <&tog LYR_GAME>;
-            key-positions = <10 14>;
+            key-positions = <4 24>;
         };
 
         mb1 {

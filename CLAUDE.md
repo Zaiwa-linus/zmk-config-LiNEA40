@@ -59,7 +59,7 @@ document/                      ドキュメント
 | 4 | `MARK` | 記号 |
 | 5 / 6 / 7 | `CURSOR_win` / `CURSOR_mac` / `CURSOR_ios` | 数字・カーソル。OS 別 |
 | 8 | `FUNCTION` | ファンクション、**トラックボールがスクロールになる層**、BT 管理、`batt_disp`、`bootloader`、`studio_unlock` |
-| 9 | `GAME` | 試験的。`A`+`G` コンボでトグル ON/OFF。矢印キー・マウスボタン、トラックボールは 90 度回転（右が上） |
+| 9 | `GAME` | 試験的。`T`+`B` コンボでトグル ON/OFF。矢印キー・マウスボタン、トラックボールは 90 度回転（右が上） |
 | 10–12 | `extra_0`–`extra_2` | `status = "disabled"`。ZMK Studio が実行時にレイヤーを追加するための空きスロット |
 
 スクロールは専用レイヤーを持たず FUNCTION に同居しています。`LiNEA40_right.overlay` の
